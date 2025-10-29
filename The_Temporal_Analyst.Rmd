@@ -22,32 +22,24 @@ head(air_data)
 
 ```
 
+```{r}
+# Remove missing values for key columns (example: year and PM2.5)
+air_clean <- air_data %>%
+  filter(!is.na(pm25_concentration), !is.na(year)) %>%
+  filter(year >= 2010 & year <= 2022)
 
-```{r}
-air_data
-```
-```{r}
-head (air_data)
-```
-```{r}
-str(air_data)
-```
+# Convert data types
+air_clean$year <- as.numeric(air_clean$year)
 
-
-```{r}
-install.packages("janitor")
+# Check summary
+summarytools::dfSummary(air_clean)
 
 ```
-```{r}
-library(janitor)
 
-```
-```{r}
-air_data <- clean_names(air_data)
-```
 
 ```{r}
-
-
+is.na(air_data)
 ```
+
+
 
