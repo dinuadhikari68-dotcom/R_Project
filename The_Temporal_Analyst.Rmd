@@ -38,8 +38,68 @@ summarytools::dfSummary(air_clean)
 
 
 ```{r}
-is.na(air_data)
+# Load tidyverse for convenient data manipulation
+library(tidyverse)
+
+# Convert numeric variables (from character to numeric)
+air_data <- air_data %>%
+  mutate(
+    pm10_concentration  = as.numeric(pm10_concentration),
+    pm25_concentration  = as.numeric(pm25_concentration),
+    no2_concentration   = as.numeric(no2_concentration),
+    pm10_tempcov        = as.numeric(pm10_tempcov),
+    pm25_tempcov        = as.numeric(pm25_tempcov),
+    no2_tempcov         = as.numeric(no2_tempcov),
+    population          = as.numeric(population)
+  )
+
+# Convert categorical variables to factor
+air_data <- air_data %>%
+  mutate(
+    who_region       = as.factor(who_region),
+    iso3             = as.factor(iso3),
+    country_name     = as.factor(country_name),
+    city             = as.factor(city),
+    type_of_stations = as.factor(type_of_stations),
+    version          = as.factor(version)
+  )
+
+# Convert year to integer (if needed)
+air_data <- air_data %>%
+  mutate(year = as.integer(year))
+
+
+
 ```
 
 
 
+```{r}
+
+air_data_scenarioA <- air_data %>%
+  select(year, country_name, who_region, city,
+         pm10_concentration, pm25_concentration, no2_concentration,
+         pm10_tempcov, pm25_tempcov, no2_tempcov, population) %>%
+  mutate(
+    year = as.integer(year),
+    country_name = as.factor(country_name),
+    who_region = as.factor(who_region),
+    city = as.factor(city),
+    pm10_concentration = as.numeric(pm10_concentration),
+    pm25_concentration = as.numeric(pm25_concentration),
+    no2_concentration = as.numeric(no2_concentration),
+    pm10_tempcov = as.numeric(pm10_tempcov),
+    pm25_tempcov = as.numeric(pm25_tempcov),
+    no2_tempcov = as.numeric(no2_tempcov),
+    population = as.numeric(population)
+  )
+
+```
+
+```{r}
+view(air_data)
+
+```
+```{r}
+glimpse(air_data)
+```
