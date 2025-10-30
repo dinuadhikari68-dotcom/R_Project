@@ -96,10 +96,27 @@ air_data_scenarioA <- air_data %>%
 
 ```
 
-```{r}
-view(air_data)
 
-```
 ```{r}
 glimpse(air_data)
+``
 ```
+
+
+```{r}
+library(dplyr)
+
+# Remove rows with NA in the specified columns
+air_clean <- air_data %>%
+  filter(
+    !is.na(pm10_concentration),
+    !is.na(pm25_concentration),
+    !is.na(no2_concentration),
+    !is.na(population)
+  )
+```
+
+```{r}
+str(air_clean)
+```
+
