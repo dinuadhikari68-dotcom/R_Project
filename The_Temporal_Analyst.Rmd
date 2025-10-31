@@ -119,4 +119,54 @@ air_clean <- air_data %>%
 ```{r}
 str(air_clean)
 ```
+```{r}
+#  Library load
+library(dplyr)
+
+# Filter 4_Eur region, 2010–2022, remove pm25 NA
+air_region <- air_data %>%
+  filter(
+    who_region == "4_Eur",
+    year >= 2010 & year <= 2022,
+    !is.na(pm25_concentration)   # main pollutant NA remove
+  ) %>%
+  mutate(
+    year = as.integer(year),
+    pm10_concentration = as.numeric(pm10_concentration),
+    pm25_concentration = as.numeric(pm25_concentration),
+    no2_concentration  = as.numeric(no2_concentration),
+    population         = as.numeric(population),
+    country_name       = as.factor(country_name),
+    city               = as.factor(city)
+  )
+
+# Remove rows with NA in main columns
+air_region_clean <- air_region %>%
+  filter(
+    !is.na(pm10_concentration),
+    !is.na(pm25_concentration),
+    !is.na(no2_concentration),
+    !is.na(population)
+  )
+
+#  Check structure
+str(air_region_clean)
+
+
+```
+```{r}
+spain_cities <- air_region_clean %>%
+  filter(country_name == "Spain") %>%
+  select(city) %>%
+  distinct() %>%
+  arrange(city)
+
+head(spain_cities, 20)
+
+
+```
+
+
+
+
 
