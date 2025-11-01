@@ -192,7 +192,7 @@ head(region_trends)
 
 ```{r}
 
-# Step 4: Yearly trends visualization
+# : Yearly trends visualization
 
 # Function to create line plots
 plot_trend <- function(data, y_var, y_label, color){
@@ -216,7 +216,7 @@ plot_trend(region_trends, "avg_no2", "NO2 (µg/m³)", "red")
 
 ```
 ```{r}
-# Step 5: Country-level comparison (PM2.5)
+# : Country-level comparison (PM2.5)
 
 country_trends <- air_region %>%
   group_by(year, country_name) %>%
@@ -225,7 +225,7 @@ country_trends <- air_region %>%
     .groups = 'drop'
   )
 
-# Top 5 countries with highest PM2.5 in 2022
+# :countries with highest PM2.5 in 2022
 top_countries_2022 <- country_trends %>%
   filter(year == 2022) %>%
   arrange(desc(avg_pm25)) %>%
@@ -246,6 +246,127 @@ ggplot(country_trends_top, aes(x = year, y = avg_pm25, color = country_name)) +
        x = "Year", y = "Average PM2.5 (µg/m³)", color = "Country") +
   scale_x_continuous(breaks = seq(2010, 2022, 1)) +
   theme_minimal()
+
+```
+```{r}
+library(tidyverse)
+# Step : Summary Statistics for Region 4_Eur
+# Compute mean, min, max of pollutants over 2010-2022
+
+summary_stats <- region_trends %>%
+  summarise(
+    mean_pm25 = mean(avg_pm25, na.rm = TRUE),   # Average PM2.5
+    mean_pm10 = mean(avg_pm10, na.rm = TRUE),   # Average PM10
+    mean_no2  = mean(avg_no2, na.rm = TRUE),    # Average NO2
+    min_pm25 = min(avg_pm25, na.rm = TRUE),     # Minimum PM2.5
+    max_pm25 = max(avg_pm25, na.rm = TRUE),     # Maximum PM2.5
+    min_pm10 = min(avg_pm10, na.rm = TRUE),     # Minimum PM10
+    max_pm10 = max(avg_pm10, na.rm = TRUE),     # Maximum PM10
+    min_no2  = min(avg_no2, na.rm = TRUE),      # Minimum NO2
+    max_no2  = max(avg_no2, na.rm = TRUE)       # Maximum NO2
+  )
+
+# Display the summary statistics
+summary_stats
+
+
+#  Save Cleaned and Aggregated Data
+# Save CSV files for reporting or further analysis
+
+# Cleaned raw data for region
+write_csv(air_region, "air_region4_Eur_cleaned.csv")
+
+# Yearly aggregated trends
+write_csv(region_trends, "region4_Eur_trends.csv")
+
+# Country-level aggregated trends
+write_csv(country_trends, "region4_Eur_country_trends.csv")
+
+
+```
+```{r}
+# Check correlation between pollutants
+pollutant_corr <- air_region %>%
+  select(pm10_concentration, pm25_concentration, no2_concentration) %>%
+  cor(use = "pairwise.complete.obs")
+
+# Print correlation matrix
+print(pollutant_corr)
+
+
+
+```
+```{r}
+install.packages("GGally")
+```
+
+
+```{r}
+# Visualize correlation
+library(GGally)
+ggpairs(air_region, columns = c("pm10_concentration","pm25_concentration","no2_concentration"),
+        title = "Correlation between PM10, PM2.5 and NO2 in 4_Eur")
+
+
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+
+# Step 1: Filter data for Region 4_Eur and years 2010–2022
+
+air_region_filtered <- air_region %>%
+  filter(who_region == "4_Eur",
+         year >= 2010 & year <= 2022) %>%
+  select(year, pm25_concentration, pm10_concentration, no2_concentration)
+
+
+
+# Step 2: Calculate yearly averages
+
+region_trends <- air_region_filtered %>%
+  group_by(year) %>%
+  summarise(
+    avg_pm25 = mean(pm25_concentration, na.rm = TRUE),
+    avg_pm10 = mean(pm10_concentration, na.rm = TRUE),
+    avg_no2  = mean(no2_concentration, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+
+# Step 3: Transform to long format for plotting
+
+pollutants_long <- region_trends %>%
+  pivot_longer(
+    cols = c(avg_pm25, avg_pm10, avg_no2),
+    names_to = "pollutant",
+    values_to = "value"
+  )
+
+
+# Step 4: Plot comparison of pollutants
+
+ggplot(pollutants_long, aes(x = year, y = value, color = pollutant)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 2) +
+  labs(
+    title = "Comparison of PM2.5, PM10, and NO2 in Region 4_Eur (2010-2022)",
+    x = "Year",
+    y = "Average Concentration (µg/m³)",
+    color = "Pollutant"
+  ) +
+  scale_x_continuous(breaks = seq(2010, 2022, 1)) +
+  theme_minimal()
+
+
+# Step 5: Summary statistics
+
+summary(region_trends)
+
+
 
 ```
 
