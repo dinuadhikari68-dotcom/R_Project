@@ -167,6 +167,85 @@ head(spain_cities, 20)
 ```
 
 
+```{r}
 
 
+library(tidyverse)
+
+```
+
+```{r}
+# summarise & save to region_trends
+region_trends <- air_region %>%
+  group_by(year) %>%
+  summarise(
+    avg_pm25 = mean(pm25_concentration, na.rm = TRUE),
+    avg_pm10 = mean(pm10_concentration, na.rm = TRUE),
+    avg_no2  = mean(no2_concentration, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+# show first few rows
+head(region_trends)
+
+```
+
+```{r}
+
+# Step 4: Yearly trends visualization
+
+# Function to create line plots
+plot_trend <- function(data, y_var, y_label, color){
+  ggplot(data, aes(x = year, y = !!sym(y_var))) +
+    geom_line(color = color, size = 1.2) +
+    geom_point(color = color, size = 2) +
+    labs(title = paste(y_label, "Trend in Region 4_Eur (2010-2022)"),
+         x = "Year", y = y_label) +
+    scale_x_continuous(breaks = seq(2010, 2022, 1)) +
+    theme_minimal()
+}
+
+# PM2.5
+plot_trend(region_trends, "avg_pm25", "PM2.5 (µg/m³)", "blue")
+
+# PM10
+plot_trend(region_trends, "avg_pm10", "PM10 (µg/m³)", "green")
+
+# NO2
+plot_trend(region_trends, "avg_no2", "NO2 (µg/m³)", "red")
+
+```
+```{r}
+# Step 5: Country-level comparison (PM2.5)
+
+country_trends <- air_region %>%
+  group_by(year, country_name) %>%
+  summarise(
+    avg_pm25 = mean(pm25_concentration, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+# Top 5 countries with highest PM2.5 in 2022
+top_countries_2022 <- country_trends %>%
+  filter(year == 2022) %>%
+  arrange(desc(avg_pm25)) %>%
+  slice_head(n = 5)
+
+top_countries_2022
+
+# Visualize PM2.5 trends for top countries
+top_country_names <- top_countries_2022$country_name
+
+country_trends_top <- country_trends %>%
+  filter(country_name %in% top_country_names)
+
+ggplot(country_trends_top, aes(x = year, y = avg_pm25, color = country_name)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 2) +
+  labs(title = "PM2.5 Trend for Top 5 Polluted Countries in 4_Eur (2010-2022)",
+       x = "Year", y = "Average PM2.5 (µg/m³)", color = "Country") +
+  scale_x_continuous(breaks = seq(2010, 2022, 1)) +
+  theme_minimal()
+
+```
 
