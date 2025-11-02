@@ -8,6 +8,9 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 
+## Scenario A: The Temporal Analyst
+
+
 ```{r}
 library(tidyverse)
 ```
@@ -68,7 +71,7 @@ air_data <- air_data %>%
 air_data <- air_data %>%
   mutate(year = as.integer(year))
 
-
+summary(air_clean)
 
 ```
 
@@ -93,13 +96,13 @@ air_data_scenarioA <- air_data %>%
     no2_tempcov = as.numeric(no2_tempcov),
     population = as.numeric(population)
   )
-
+air_data
 ```
 
 
 ```{r}
 glimpse(air_data)
-``
+
 ```
 
 
@@ -114,6 +117,7 @@ air_clean <- air_data %>%
     !is.na(no2_concentration),
     !is.na(population)
   )
+air_clean
 ```
 
 ```{r}
@@ -248,42 +252,26 @@ ggplot(country_trends_top, aes(x = year, y = avg_pm25, color = country_name)) +
   theme_minimal()
 
 ```
+
 ```{r}
-library(tidyverse)
-# Step : Summary Statistics for Region 4_Eur
-# Compute mean, min, max of pollutants over 2010-2022
+# Summary statistics & % change
 
 summary_stats <- region_trends %>%
   summarise(
-    mean_pm25 = mean(avg_pm25, na.rm = TRUE),   # Average PM2.5
-    mean_pm10 = mean(avg_pm10, na.rm = TRUE),   # Average PM10
-    mean_no2  = mean(avg_no2, na.rm = TRUE),    # Average NO2
-    min_pm25 = min(avg_pm25, na.rm = TRUE),     # Minimum PM2.5
-    max_pm25 = max(avg_pm25, na.rm = TRUE),     # Maximum PM2.5
-    min_pm10 = min(avg_pm10, na.rm = TRUE),     # Minimum PM10
-    max_pm10 = max(avg_pm10, na.rm = TRUE),     # Maximum PM10
-    min_no2  = min(avg_no2, na.rm = TRUE),      # Minimum NO2
-    max_no2  = max(avg_no2, na.rm = TRUE)       # Maximum NO2
+    mean_pm25 = mean(avg_pm25, na.rm = TRUE),
+    mean_pm10 = mean(avg_pm10, na.rm = TRUE),
+    mean_no2  = mean(avg_no2, na.rm = TRUE),
+    min_pm25  = min(avg_pm25, na.rm = TRUE),
+    max_pm25  = max(avg_pm25, na.rm = TRUE),
+    min_pm10  = min(avg_pm10, na.rm = TRUE),
+    max_pm10  = max(avg_pm10, na.rm = TRUE),
+    min_no2   = min(avg_no2, na.rm = TRUE),
+    max_no2   = max(avg_no2, na.rm = TRUE)
   )
-
-# Display the summary statistics
 summary_stats
-
-
-#  Save Cleaned and Aggregated Data
-# Save CSV files for reporting or further analysis
-
-# Cleaned raw data for region
-write_csv(air_region, "air_region4_Eur_cleaned.csv")
-
-# Yearly aggregated trends
-write_csv(region_trends, "region4_Eur_trends.csv")
-
-# Country-level aggregated trends
-write_csv(country_trends, "region4_Eur_country_trends.csv")
-
-
 ```
+
+
 ```{r}
 # Check correlation between pollutants
 pollutant_corr <- air_region %>%
@@ -298,6 +286,8 @@ print(pollutant_corr)
 ```
 ```{r}
 install.packages("GGally")
+
+
 ```
 
 
@@ -397,6 +387,87 @@ pm25_end   <- region_trends %>% filter(year == 2022) %>% pull(avg_pm25)
 pm25_change_pct <- ((pm25_end - pm25_start) / pm25_start) * 100
 pm25_change_pct
 
+# Similarly for PM10 and NO2
+pm10_start <- region_trends %>% filter(year == 2010) %>% pull(avg_pm10)
+pm10_end   <- region_trends %>% filter(year == 2022) %>% pull(avg_pm10)
+pm10_change_pct <- ((pm10_end - pm10_start) / pm10_start) * 100
+
+no2_start <- region_trends %>% filter(year == 2010) %>% pull(avg_no2)
+no2_end   <- region_trends %>% filter(year == 2022) %>% pull(avg_no2)
+no2_change_pct <- ((no2_end - no2_start) / no2_start) * 100
+
+
+
 ```
+
+
+```{r}
+
+# Highest polluted cities (2010–2022)
+
+library(tidyverse)
+
+#  PM2.5 
+top_cities_pm25_all <- air_region %>%
+  filter(year >= 2010 & year <= 2022) %>%
+  group_by(country_name, city) %>%
+  summarise(avg_pm25 = mean(pm25_concentration, na.rm = TRUE)) %>%
+  arrange(desc(avg_pm25)) %>%
+  slice_head(n = 10)
+
+#  PM10 
+top_cities_pm10_all <- air_region %>%
+  filter(year >= 2010 & year <= 2022) %>%
+  group_by(country_name, city) %>%
+  summarise(avg_pm10 = mean(pm10_concentration, na.rm = TRUE)) %>%
+  arrange(desc(avg_pm10)) %>%
+  slice_head(n = 10)
+
+#  NO2 
+top_cities_no2_all <- air_region %>%
+  filter(year >= 2010 & year <= 2022) %>%
+  group_by(country_name, city) %>%
+  summarise(avg_no2 = mean(no2_concentration, na.rm = TRUE)) %>%
+  arrange(desc(avg_no2)) %>%
+  slice_head(n = 10)
+
+# Output print 
+cat("==== Top 10 Cities (2010–2022) – PM2.5 ====\n")
+print(top_cities_pm25_all)
+cat("\n==== Top 10 Cities (2010–2022) – PM10 ====\n")
+print(top_cities_pm10_all)
+cat("\n==== Top 10 Cities (2010–2022) – NO2 ====\n")
+print(top_cities_no2_all)
+
+
+```
+
+
+
+```{r}
+# Interpretation (example statements for report)
+
+cat("\nInterpretation:\n")
+if(pm25_change_pct < 0){
+  cat("PM2.5 decreased by", round(abs(pm25_change_pct),2), "% → slight improvement in air quality.\n")
+} else {
+  cat("PM2.5 increased by", round(pm25_change_pct,2), "% → air quality worsened.\n")
+}
+
+if(pm10_change_pct < 0){
+  cat("PM10 decreased by", round(abs(pm10_change_pct),2), "% → improvement.\n")
+} else {
+  cat("PM10 increased by", round(pm10_change_pct,2), "% → worsened.\n")
+}
+
+if(no2_change_pct < 0){
+  cat("NO2 decreased by", round(abs(no2_change_pct),2), "% → improvement.\n")
+} else {
+  cat("NO2 increased by", round(no2_change_pct,2), "% → worsened.\n")
+}
+
+```
+
+
 
 
