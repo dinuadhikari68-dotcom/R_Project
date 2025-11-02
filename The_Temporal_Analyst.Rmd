@@ -316,7 +316,7 @@ library(tidyr)
 library(ggplot2)
 
 
-# Step 1: Filter data for Region 4_Eur and years 2010–2022
+# : Filter data for Region 4_Eur and years 2010–2022
 
 air_region_filtered <- air_region %>%
   filter(who_region == "4_Eur",
@@ -325,7 +325,7 @@ air_region_filtered <- air_region %>%
 
 
 
-# Step 2: Calculate yearly averages
+# : Calculate yearly averages
 
 region_trends <- air_region_filtered %>%
   group_by(year) %>%
@@ -337,7 +337,7 @@ region_trends <- air_region_filtered %>%
   )
 
 
-# Step 3: Transform to long format for plotting
+# : Transform to long format for plotting
 
 pollutants_long <- region_trends %>%
   pivot_longer(
@@ -347,7 +347,7 @@ pollutants_long <- region_trends %>%
   )
 
 
-# Step 4: Plot comparison of pollutants
+# : Plot comparison of pollutants
 
 ggplot(pollutants_long, aes(x = year, y = value, color = pollutant)) +
   geom_line(size = 1.2) +
@@ -362,11 +362,41 @@ ggplot(pollutants_long, aes(x = year, y = value, color = pollutant)) +
   theme_minimal()
 
 
-# Step 5: Summary statistics
+# : Summary statistics
 
 summary(region_trends)
 
 
 
 ```
+```{r}
+install.packages("ggplot2")
+```
+
+
+```{r}
+library(ggplot2)
+
+#visualize distribution of PM2.5 across years
+ggplot(air_region, aes(x = factor(year), y = pm25_concentration)) +
+  geom_boxplot(fill = "skyblue", alpha = 0.5) +
+  labs(title = "Distribution of PM2.5 Concentration per Year in 4_Eur",
+       x = "Year", y = "PM2.5 (µg/m³)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+library(dplyr)
+
+# Trend interpretation helper
+
+# Compute % change of PM2.5 over the period
+pm25_start <- region_trends %>% filter(year == 2010) %>% pull(avg_pm25)
+pm25_end   <- region_trends %>% filter(year == 2022) %>% pull(avg_pm25)
+pm25_change_pct <- ((pm25_end - pm25_start) / pm25_start) * 100
+pm25_change_pct
+
+```
+
 
