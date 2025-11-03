@@ -468,6 +468,105 @@ if(no2_change_pct < 0){
 
 ```
 
+```{r}
 
+# Identify top 10 cities by PM2.5
+top_cities_pm25 <- air_clean %>%
+  group_by(country_name, city) %>%
+  summarise(avg_pm25 = mean(pm25_concentration, na.rm = TRUE)) %>%
+  arrange(desc(avg_pm25)) %>%
+  slice_head(n = 10)
+
+print(top_cities_pm25)
+
+```
+```{r}
+library(tidyverse)
+
+# Region Trends (2010–2022) – 4_Eur
+
+region_trends <- air_clean %>%
+  filter(who_region == "4_Eur", year >= 2010 & year <= 2022) %>%
+  group_by(year) %>%
+  summarise(
+    avg_pm25 = mean(pm25_concentration, na.rm = TRUE),
+    avg_pm10 = mean(pm10_concentration, na.rm = TRUE),
+    avg_no2  = mean(no2_concentration, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+head(region_trends)
+
+
+# Pivot longer for plotting
+
+region_trends_long <- region_trends %>%
+  pivot_longer(cols = c(avg_pm25, avg_pm10, avg_no2),
+               names_to = "pollutant",
+               values_to = "avg_value")
+
+
+# Final Line Chart
+
+ggplot(region_trends_long, aes(x = year, y = avg_value, color = pollutant, group = pollutant)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 2) +
+  labs(
+    title = "Air Pollution Trend (PM2.5, PM10, NO₂) in Region 4_Eur (2010–2022)",
+    x = "Year",
+    y = "Average Concentration (µg/m³)",
+    color = "Pollutant"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold"),
+    legend.position = "top"
+  )
+
+
+
+
+```
+```{r}
+region_trends <- air_clean %>%
+  filter(who_region == "4_Eur", year >= 2010 & year <= 2022) %>%
+  group_by(year) %>%
+  summarise(
+    avg_pm25 = mean(pm25_concentration, na.rm = TRUE),
+    avg_pm10 = mean(pm10_concentration, na.rm = TRUE),
+    avg_no2  = mean(no2_concentration, na.rm = TRUE),
+    .groups = 'drop'
+  )
+head(region_trends)
+
+
+
+```
+```{r}
+library(tidyr)
+long_data <- region_trends %>%
+  pivot_longer(cols = c(avg_pm25, avg_pm10, avg_no2), names_to = "pollutant", values_to = "concentration")
+
+ggplot(long_data, aes(x = year, y = concentration, color = pollutant)) +
+  geom_line(size = 1.2) +
+  labs(title = "Yearly Trends of Pollutants in Europe", x = "Year", y = "Average Concentration (µg/m³)") +
+  theme_minimal()
+
+```
+
+
+
+
+
+```{r}
+# Percentage change calculation for PM2.5
+pm25_start <- region_trends %>% filter(year == 2010) %>% pull(avg_pm25)
+pm25_end   <- region_trends %>% filter(year == 2022) %>% pull(avg_pm25)
+pm25_change_pct <- ((pm25_end - pm25_start) / pm25_start) * 100
+pm25_change_pct
+
+
+
+```
 
 
